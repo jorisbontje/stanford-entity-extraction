@@ -1,0 +1,5 @@
+ADD JAR target/stanford-entity-extraction-0.1-SNAPSHOT.jar;
+
+CREATE TEMPORARY FUNCTION ner AS 'stanford.NERUDF';
+
+SELECT ner(1, 5) AS i FROM sample_07;

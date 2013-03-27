@@ -30,6 +30,19 @@
 			<version>2.0.0-cdh4.2.0</version>
 			<scope>provided</scope>
 		</dependency>
+		<!-- Hive -->
+		<dependency>
+			<groupId>org.apache.hive</groupId>
+			<artifactId>hive-common</artifactId>
+			<version>0.10.0-cdh4.2.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.hive</groupId>
+			<artifactId>hive-exec</artifactId>
+			<version>0.10.0-cdh4.2.0</version>
+			<scope>provided</scope>
+		</dependency>
 		<!-- Commons -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>
