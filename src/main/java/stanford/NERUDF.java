@@ -1,6 +1,7 @@
 package stanford;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
@@ -13,10 +14,16 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
+import edu.stanford.nlp.ie.AbstractSequenceClassifier;
+import edu.stanford.nlp.ie.crf.CRFClassifier;
+import edu.stanford.nlp.util.Triple;
+
 public class NERUDF extends GenericUDTF {
 
-	Object[] forwardObj = null;
-	PrimitiveObjectInspector stringOI;
+	private Object[] forwardObj = null;
+	private PrimitiveObjectInspector stringOI;
+	private AbstractSequenceClassifier classifier;
+
 	
 	@Override
 	public StructObjectInspector initialize(ObjectInspector[] args)
@@ -26,6 +33,9 @@ public class NERUDF extends GenericUDTF {
 		throw new UDFArgumentLengthException(
 					"The operator 'NERUDF' accepts 2 arguments.");
 		}
+		
+		String serializedClassifier = "/home/training/stanford-ner-2012-11-11/classifiers/english.all.3class.distsim.crf.ser.gz";
+		this.classifier = CRFClassifier.getClassifierNoExceptions(serializedClassifier);
 		
 		stringOI = (PrimitiveObjectInspector) args[0];
 		
@@ -54,9 +64,12 @@ public class NERUDF extends GenericUDTF {
 		String messageId = (String) stringOI.getPrimitiveJavaObject(args[0]);
 		String body = (String) stringOI.getPrimitiveJavaObject(args[1]);
 
-		for (int i = 0; i < 3; i++) {
-			this.forwardObj[0] = new String("entityName" + i);
-			this.forwardObj[1] = new String("entityType" + i);
+		List<Triple<String, Integer, Integer>> result = classifier
+				.classifyToCharacterOffsets(body);
+		
+		for (Triple<String, Integer, Integer> triple : result) {
+			this.forwardObj[0] = body.toString().substring(triple.second, triple.third);
+			this.forwardObj[1] = triple.first;
 			this.forwardObj[2] = messageId;
 			forward(forwardObj);
 		}
