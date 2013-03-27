@@ -1,0 +1,20 @@
+ADD JAR lib/stanford-corenlp-1.3.4.jar;
+ADD JAR target/stanford-entity-extraction-0.1-SNAPSHOT.jar;
+
+SET mapred.max.split.size=4000000;
+SET hive.enforce.bucketing=true;
+SET hive.merge.mapfiles=false;
+SET hive.merge.mapredfiles=false;
+
+CREATE TEMPORARY FUNCTION ner AS 'stanford.NERUDF';
+
+DROP TABLE IF EXISTS enron_sample;
+CREATE TABLE enron_sample (message_id string, body string) CLUSTERED BY (message_id) INTO 32 BUCKETS;
+
+INSERT OVERWRITE TABLE enron_sample
+SELECT message_id, body FROM enron_avro
+WHERE message_id IS NOT NULL AND body IS NOT NULL;
+
+DROP TABLE IF EXISTS enron_entities2;
+CREATE TABLE enron_entities2 AS
+SELECT ner(message_id, body) AS (entityName, entityType, messageId) FROM enron_sample;
