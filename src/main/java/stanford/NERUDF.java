@@ -34,7 +34,7 @@ public class NERUDF extends GenericUDTF {
 					"The operator 'NERUDF' accepts 2 arguments.");
 		}
 		
-		String serializedClassifier = "/home/training/stanford-ner-2012-11-11/classifiers/english.all.3class.distsim.crf.ser.gz";
+		String serializedClassifier = "/tmp/english.all.3class.distsim.crf.ser.gz";
 		this.classifier = CRFClassifier.getClassifierNoExceptions(serializedClassifier);
 		
 		stringOI = (PrimitiveObjectInspector) args[0];

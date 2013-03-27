@@ -22,7 +22,7 @@ public class StanfordMapper extends
 	public void setup(Context context) throws IOException {
 		serializedClassifier = context.getConfiguration().get(
 				"stanford.classifier",
-				"/home/training/stanford-ner-2012-11-11/classifiers/english.all.3class.distsim.crf.ser.gz");
+				"/tmp/english.all.3class.distsim.crf.ser.gz");
 		this.classifier = CRFClassifier.getClassifierNoExceptions(serializedClassifier);
 	}
 
