@@ -3,50 +3,61 @@ package stanford;
 import java.util.ArrayList;
 
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableConstantIntObjectInspector;
-import org.apache.hadoop.io.IntWritable;
 
 public class NERUDF extends GenericUDTF {
-	IntWritable start;
-	IntWritable end;
-	IntWritable inc;
-	Object[] forwardObj = null;
 
+	Object[] forwardObj = null;
+	PrimitiveObjectInspector stringOI;
+	
 	@Override
 	public StructObjectInspector initialize(ObjectInspector[] args)
 			throws UDFArgumentException {
-		start = ((WritableConstantIntObjectInspector) args[0])
-				.getWritableConstantValue();
-		end = ((WritableConstantIntObjectInspector) args[1])
-				.getWritableConstantValue();
-		if (args.length == 3) {
-			inc = ((WritableConstantIntObjectInspector) args[2])
-					.getWritableConstantValue();
-		} else {
-			inc = new IntWritable(1);
+		
+		if (args.length != 2) {
+		throw new UDFArgumentLengthException(
+					"The operator 'NERUDF' accepts 2 arguments.");
 		}
-		this.forwardObj = new Object[1];
+		
+		stringOI = (PrimitiveObjectInspector) args[0];
+		
 		ArrayList<String> fieldNames = new ArrayList<String>();
 		ArrayList<ObjectInspector> fieldOIs = new ArrayList<ObjectInspector>();
-		fieldNames.add("col0");
+
+		fieldNames.add("entityName");
 		fieldOIs.add(PrimitiveObjectInspectorFactory
-				.getPrimitiveJavaObjectInspector(PrimitiveCategory.INT));
+				.getPrimitiveJavaObjectInspector(PrimitiveCategory.STRING));
+
+		fieldNames.add("entityType");
+		fieldOIs.add(PrimitiveObjectInspectorFactory
+				.getPrimitiveJavaObjectInspector(PrimitiveCategory.STRING));
+
+		fieldNames.add("messageId");
+		fieldOIs.add(PrimitiveObjectInspectorFactory
+				.getPrimitiveJavaObjectInspector(PrimitiveCategory.STRING));
+
+		this.forwardObj = new Object[3];
 		return ObjectInspectorFactory.getStandardStructObjectInspector(
 				fieldNames, fieldOIs);
 	}
 
 	@Override
-	public void process(Object[] args) throws HiveException,
-			UDFArgumentException {
-		for (int i = start.get(); i < end.get(); i = i + inc.get()) {
-			this.forwardObj[0] = new Integer(i);
+	public void process(Object[] args) throws HiveException, UDFArgumentException {
+		String messageId = (String) stringOI.getPrimitiveJavaObject(args[0]);
+		String body = (String) stringOI.getPrimitiveJavaObject(args[1]);
+
+		for (int i = 0; i < 3; i++) {
+			this.forwardObj[0] = new String("entityName" + i);
+			this.forwardObj[1] = new String("entityType" + i);
+			this.forwardObj[2] = messageId;
 			forward(forwardObj);
 		}
 	}

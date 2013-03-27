@@ -2,4 +2,4 @@ ADD JAR target/stanford-entity-extraction-0.1-SNAPSHOT.jar;
 
 CREATE TEMPORARY FUNCTION ner AS 'stanford.NERUDF';
 
-SELECT ner(1, 5) AS i FROM sample_07;
+SELECT ner(code, description) AS (entityName, entityType, messageId) FROM sample_07 LIMIT 10;
